@@ -25,7 +25,14 @@ export const convertPDFToImages = async (pdfPath: string, outputDir: string): Pr
     return results.map((result: any) => result.path);
   } catch (error) {
     console.error('PDF conversion error:', error);
-    throw new Error('Failed to convert PDF to images');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    // Check for common errors
+    if (errorMessage.includes('gm') || errorMessage.includes('GraphicsMagick') || errorMessage.includes('ImageMagick')) {
+      throw new Error('GraphicsMagick or ImageMagick not found. Please install GraphicsMagick or ImageMagick for PDF conversion.');
+    }
+    
+    throw new Error(`Failed to convert PDF to images: ${errorMessage}`);
   }
 };
 

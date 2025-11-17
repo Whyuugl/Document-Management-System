@@ -184,7 +184,7 @@ Aplikasi ini dilengkapi dengan fitur OCR (Optical Character Recognition) yang da
 
 ### API OCR Endpoints:
 
-- `POST /api/ocr/extract-text` - Ekstrak teks dari gambar atau PDF
+- `POST /api/ocr/extract-text` - Ekstrak teks dari gambar atau PDF (Tesseract.js)
 - `POST /api/ocr/parse-ktp` - Parse KTP/KK dan ekstrak data terstruktur dari gambar/PDF
 - `POST /api/ocr/upload` - Upload file gambar atau PDF
 

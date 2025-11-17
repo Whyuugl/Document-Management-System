@@ -15,7 +15,8 @@ const KTPOCRScanner = ({ onDataExtracted, onClose }) => {
         return;
       }
       // Validate file size (10MB max)
-      if (selectedFile.size > 10 * 1024 * 1024) {
+      const maxSize = 10 * 1024 * 1024;
+      if (selectedFile.size > maxSize) {
         setError('Ukuran file harus kurang dari 10MB');
         return;
       }
@@ -92,7 +93,10 @@ const KTPOCRScanner = ({ onDataExtracted, onClose }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/ocr/simple-ocr', {
+      // Use Tesseract.js endpoint
+      const endpoint = '/api/ocr/parse-ktp';
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       });
@@ -100,15 +104,43 @@ const KTPOCRScanner = ({ onDataExtracted, onClose }) => {
       const result = await response.json();
 
       if (result.success) {
-        // Use data from API response
-        setExtractedData(result.data);
+        // Use data from API response - handle both old and new response formats
+        const data = result.data || result;
+        setExtractedData(data);
         
         // Show extracted data to user for confirmation
         if (onDataExtracted) {
-          onDataExtracted(result.data);
+          onDataExtracted(data);
         }
       } else {
-        setError(result.error || 'Gagal memproses gambar');
+        // Check for Ghostscript error specifically
+        if (result.error && result.error.includes('Ghostscript')) {
+          setError(
+            <div>
+              <p className="font-semibold text-red-800 mb-2">Ghostscript Diperlukan</p>
+              <p className="text-red-700 mb-2">{result.error}</p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-2">
+                <p className="text-sm text-yellow-800">
+                  <strong>Solusi Cepat:</strong> Download Ghostscript dari{' '}
+                  <a 
+                    href="https://www.ghostscript.com/download/gsdnld.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    ghostscript.com
+                  </a>
+                  {' '}dan install, lalu restart aplikasi.
+                </p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Atau gunakan Tesseract.js (lebih cepat) untuk OCR dasar tanpa fitur PDF.
+                </p>
+              </div>
+            </div>
+          );
+        } else {
+          setError(result.error || 'Gagal memproses gambar');
+        }
       }
     } catch (err) {
       setError('Error jaringan: ' + err.message);
@@ -262,6 +294,7 @@ const KTPOCRScanner = ({ onDataExtracted, onClose }) => {
               <li>• Maksimal ukuran file: 10MB</li>
               <li>• Format yang didukung: JPG, PNG, GIF, PDF</li>
               <li>• Data akan otomatis diisi ke form setelah scan</li>
+              <li>• Menggunakan Tesseract.js untuk OCR</li>
             </ul>
           </div>
         </div>

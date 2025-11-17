@@ -8,6 +8,7 @@ import ArsipKependudukan from './pages/ArsipKependudukan';
 import TambahArsip from './pages/TambahArsip';
 import Laporan from './pages/Laporan';
 import Pengaturan from './pages/Pengaturan';
+import TestConnection from './pages/TestConnection';
 import './App.css';
 
 function App() {
@@ -33,9 +34,13 @@ function App() {
           setUser(data.user);
           setIsLoggedIn(true);
         }
+      } else {
+        // If 401, user is not logged in, which is fine
+        console.log('User not authenticated, showing login page');
       }
     } catch (error) {
       console.error('Auth check error:', error);
+      // Don't show error for auth check, just proceed to login
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +96,8 @@ function App() {
         return <Laporan />;
       case 'pengaturan':
         return <Pengaturan />;
+      case 'test-connection':
+        return <TestConnection />;
       default:
         return <Dashboard />;
     }

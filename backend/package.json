@@ -12,12 +12,15 @@
     "create-user": "node scripts/create-user.js",
     "create-admin": "node scripts/create-user.js admin admin123",
     "create-user-custom": "node scripts/create-user.js",
-    "create-dummy-users": "node scripts/create-dummy-users.js"
+    "create-dummy-users": "node scripts/create-dummy-users.js",
+    "install-ghostscript": "node scripts/install-ghostscript.js",
+    "install-indonesian-lang": "node scripts/install-indonesian-lang.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "form-data": "^4.0.0",
     "formidable": "^3.5.1",
     "jsonwebtoken": "^9.0.2",
     "next": "^14.0.0",
@@ -28,7 +31,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sharp": "^0.32.6",
-    "tesseract.js": "^5.0.0"
+    "tesseract.js": "file:./tesseract-js-local"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
