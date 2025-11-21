@@ -1,7 +1,7 @@
 {
   "name": "@arsip-app/backend",
   "version": "1.0.0",
-  "description": "Backend API for Arsip Kependudukan Application with OCR",
+  "description": "Backend API for Arsip Kependudukan Application",
   "private": true,
   "scripts": {
     "dev": "next dev -p 5000",
@@ -13,8 +13,8 @@
     "create-admin": "node scripts/create-user.js admin admin123",
     "create-user-custom": "node scripts/create-user.js",
     "create-dummy-users": "node scripts/create-dummy-users.js",
-    "install-ghostscript": "node scripts/install-ghostscript.js",
-    "install-indonesian-lang": "node scripts/install-indonesian-lang.js"
+    "migrate": "node scripts/run-migration.js",
+    "test-db": "node scripts/test-db-connection.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -25,13 +25,10 @@
     "jsonwebtoken": "^9.0.2",
     "next": "^14.0.0",
     "node-fetch": "^2.7.0",
-    "pdf-poppler": "^0.2.1",
-    "pdf2pic": "^2.1.4",
     "pg": "^8.11.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sharp": "^0.32.6",
-    "tesseract.js": "file:./tesseract-js-local"
+    "sharp": "^0.32.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -50,7 +47,6 @@
     "backend",
     "arsip",
     "kependudukan",
-    "ocr",
     "nextjs"
   ],
   "author": "",

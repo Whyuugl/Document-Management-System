@@ -2,8 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
-import pool from '../../../lib/database';
-import { requireAuth, AuthenticatedRequest } from '../../../lib/middleware';
+import pool from '../../lib/database';
+import { requireAuth, AuthenticatedRequest } from '../../lib/middleware';
 
 // Disable default body parser for file uploads
 export const config = {
@@ -12,7 +12,8 @@ export const config = {
   },
 };
 
-async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
+async function handler(req: AuthenticatedRequest, res: NextApiResponse): Promise<void> {
+  // Ensure JSON response for all errors
   if (req.method === 'POST') {
     try {
       if (!req.user) {
@@ -22,14 +23,21 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         });
       }
 
+      // Ensure uploads directory exists
+      const uploadsDir = path.join(process.cwd(), 'uploads', 'arsip');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
       // Parse the form data
       const form = formidable({
-        uploadDir: './uploads/arsip',
+        uploadDir: uploadsDir,
         keepExtensions: true,
         maxFileSize: 10 * 1024 * 1024, // 10MB
         filter: function ({ mimetype }) {
           // Allow common document and image files
-          return mimetype && (
+          if (!mimetype) return false;
+          return (
             mimetype.includes('image') || 
             mimetype.includes('pdf') || 
             mimetype.includes('document')
@@ -37,29 +45,32 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         }
       });
 
-      // Ensure uploads directory exists
-      const uploadsDir = path.join(process.cwd(), 'uploads', 'arsip');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+      let fields, files;
+      try {
+        [fields, files] = await form.parse(req);
+      } catch (parseError: any) {
+        console.error('Formidable parse error:', parseError);
+        return res.status(400).json({
+          success: false,
+          error: parseError.message || 'Gagal memproses file upload'
+        });
       }
-
-      const [fields, files] = await form.parse(req);
       
       // Extract form fields
       const jenisArsip = Array.isArray(fields.jenis_arsip) ? fields.jenis_arsip[0] : fields.jenis_arsip;
-      const nomorAkta = Array.isArray(fields.nomor_akta) ? fields.nomor_akta[0] : fields.nomor_akta;
+      const noKK = Array.isArray(fields.no_kk) ? fields.no_kk[0] : fields.no_kk;
+      const nik = Array.isArray(fields.nik) ? fields.nik[0] : fields.nik;
       const namaLengkap = Array.isArray(fields.nama_lengkap) ? fields.nama_lengkap[0] : fields.nama_lengkap;
       const tempatLahir = Array.isArray(fields.tempat_lahir) ? fields.tempat_lahir[0] : fields.tempat_lahir;
       const tanggalLahir = Array.isArray(fields.tanggal_lahir) ? fields.tanggal_lahir[0] : fields.tanggal_lahir;
       const jenisKelamin = Array.isArray(fields.jenis_kelamin) ? fields.jenis_kelamin[0] : fields.jenis_kelamin;
       const alamat = Array.isArray(fields.alamat) ? fields.alamat[0] : fields.alamat;
-      const status = Array.isArray(fields.status) ? fields.status[0] : fields.status || 'pending';
 
       // Validate required fields
-      if (!jenisArsip || !nomorAkta || !namaLengkap || !tempatLahir || !tanggalLahir || !jenisKelamin || !alamat) {
+      if (!jenisArsip || !noKK || !nik || !namaLengkap || !tempatLahir || !tanggalLahir || !jenisKelamin || !alamat) {
         return res.status(400).json({
           success: false,
-          error: 'All required fields must be provided'
+          error: 'Semua field wajib harus diisi'
         });
       }
 
@@ -81,13 +92,13 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       // Insert into database
       const result = await pool.query(
         `INSERT INTO arsip (
-          jenis_arsip, nomor_akta, nama_lengkap, tempat_lahir, 
-          tanggal_lahir, jenis_kelamin, alamat, status, file_path, created_by
+          jenis_arsip, no_kk, nik, nama_lengkap, tempat_lahir, 
+          tanggal_lahir, jenis_kelamin, alamat, file_path, created_by
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-        RETURNING id, jenis_arsip, nomor_akta, nama_lengkap, created_at`,
+        RETURNING id, jenis_arsip, no_kk, nik, nama_lengkap, created_at`,
         [
-          jenisArsip, nomorAkta, namaLengkap, tempatLahir,
-          tanggalLahir, jenisKelamin, alamat, status, filePath, req.user.id
+          jenisArsip, noKK, nik, namaLengkap, tempatLahir,
+          tanggalLahir, jenisKelamin, alamat, filePath, req.user.id
         ]
       );
 
@@ -96,8 +107,9 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         message: 'Arsip berhasil ditambahkan',
         data: result.rows[0]
       });
+      return;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating arsip:', error);
       
       // Handle unique constraint violation
@@ -108,9 +120,17 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         });
       }
 
-      res.status(500).json({
+      // Handle database errors
+      if (error.code && error.code.startsWith('23')) {
+        return res.status(400).json({
+          success: false,
+          error: 'Data tidak valid: ' + (error.message || 'Constraint violation')
+        });
+      }
+
+      return res.status(500).json({
         success: false,
-        error: 'Internal server error'
+        error: error.message || 'Internal server error'
       });
     }
   } else if (req.method === 'GET') {
@@ -123,7 +143,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       }
 
       // Get query parameters
-      const { page = 1, limit = 10, status, jenis_arsip } = req.query;
+      const { page = 1, limit = 10, jenis_arsip } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
 
       // Build query
@@ -134,11 +154,6 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       `;
       const queryParams = [];
       const conditions = [];
-
-      if (status) {
-        conditions.push(`a.status = $${queryParams.length + 1}`);
-        queryParams.push(status);
-      }
 
       if (jenis_arsip) {
         conditions.push(`a.jenis_arsip = $${queryParams.length + 1}`);
@@ -171,17 +186,19 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
           totalPages: Math.ceil(Number(countResult.rows[0].count) / Number(limit))
         }
       });
+      return;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching arsip:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        error: 'Internal server error'
+        error: error.message || 'Internal server error'
       });
     }
   } else {
     res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return;
   }
 }
 

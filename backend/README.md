@@ -1,6 +1,6 @@
 # Backend API - Arsip Kependudukan
 
-Backend API untuk aplikasi Arsip Kependudukan dengan fitur OCR dan sistem autentikasi.
+Backend API untuk aplikasi Arsip Kependudukan dengan sistem autentikasi.
 
 ## Setup Database
 

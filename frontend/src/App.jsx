@@ -8,7 +8,6 @@ import ArsipKependudukan from './pages/ArsipKependudukan';
 import TambahArsip from './pages/TambahArsip';
 import Laporan from './pages/Laporan';
 import Pengaturan from './pages/Pengaturan';
-import TestConnection from './pages/TestConnection';
 import './App.css';
 
 function App() {
@@ -96,8 +95,6 @@ function App() {
         return <Laporan />;
       case 'pengaturan':
         return <Pengaturan />;
-      case 'test-connection':
-        return <TestConnection />;
       default:
         return <Dashboard />;
     }

@@ -1,8 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import Chart from '../components/Chart';
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalArsip: 0,
+    kelahiran: 0,
+    pernikahan: 0,
+    perceraian: 0,
+    kematian: 0,
+    arsipBulanIni: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch('/api/dashboard/stats', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setStats(data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   // Icons for stat cards
   const icons = {
     archive: (
@@ -50,37 +82,37 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Total Arsip Kependudukan"
-            value="987"
+            value={loading ? '...' : stats.totalArsip.toString()}
             icon={icons.archive}
             color="custom"
           />
           <StatCard
             title="Total Akta Pernikahan"
-            value="323"
+            value={loading ? '...' : stats.pernikahan.toString()}
             icon={icons.checkmark}
             color="green"
           />
           <StatCard
             title="Total Akta Kelahiran"
-            value="475"
+            value={loading ? '...' : stats.kelahiran.toString()}
             icon={icons.birth}
             color="blue"
           />
           <StatCard
             title="Arsip Bulan ini"
-            value="23"
+            value={loading ? '...' : stats.arsipBulanIni.toString()}
             icon={icons.calendar}
             color="custom"
           />
           <StatCard
             title="Total Akta Perceraian"
-            value="162"
+            value={loading ? '...' : stats.perceraian.toString()}
             icon={icons.divorce}
             color="green"
           />
           <StatCard
             title="Total Akta Kematian"
-            value="246"
+            value={loading ? '...' : stats.kematian.toString()}
             icon={icons.death}
             color="blue"
           />

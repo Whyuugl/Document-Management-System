@@ -3,21 +3,22 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     res.status(200).json({
-      message: 'Arsip Kependudukan API Server with OCR',
+      message: 'Arsip Kependudukan API Server',
       version: '1.0.0',
       status: 'running',
       endpoints: {
         health: '/api/health',
-        ocr: {
-          extractText: '/api/ocr/extract-text',
-          upload: '/api/ocr/upload'
-        }
+        auth: {
+          login: '/api/auth/login',
+          logout: '/api/auth/logout',
+          me: '/api/auth/me'
+        },
+        arsip: '/api/arsip'
       },
       features: [
-        'OCR Text Extraction',
-        'Image Upload',
-        'Multi-language Support (Indonesian + English)',
-        'File Processing'
+        'File Upload',
+        'Authentication',
+        'Archive Management'
       ]
     });
   } else {

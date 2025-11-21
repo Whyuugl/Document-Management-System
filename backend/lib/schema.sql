@@ -11,17 +11,14 @@ CREATE TABLE IF NOT EXISTS users (
 -- Arsip table
 CREATE TABLE IF NOT EXISTS arsip (
     id SERIAL PRIMARY KEY,
-    jenis_arsip VARCHAR(50) NOT NULL,
-    nomor_akta VARCHAR(50) UNIQUE NOT NULL,
+    no_kk VARCHAR(20) NOT NULL,
+    jenis_arsip VARCHAR(50) NOT NULL CHECK (jenis_arsip IN ('kelahiran', 'pernikahan', 'perceraian', 'kematian')),
+    nik VARCHAR(16) NOT NULL,
     nama_lengkap VARCHAR(100) NOT NULL,
-    tempat_lahir VARCHAR(100),
-    tanggal_lahir DATE,
-    jenis_kelamin VARCHAR(20) CHECK (jenis_kelamin IN ('laki-laki', 'perempuan')),
-    alamat TEXT,
-    nama_ayah VARCHAR(100),
-    nama_ibu VARCHAR(100),
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'tersimpan', 'ditolak')),
-    keterangan TEXT,
+    tempat_lahir VARCHAR(100) NOT NULL,
+    tanggal_lahir DATE NOT NULL,
+    jenis_kelamin VARCHAR(20) NOT NULL CHECK (jenis_kelamin IN ('laki-laki', 'perempuan')),
+    alamat TEXT NOT NULL,
     file_path VARCHAR(255),
     created_by INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -30,9 +27,10 @@ CREATE TABLE IF NOT EXISTS arsip (
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-CREATE INDEX IF NOT EXISTS idx_arsip_nomor_akta ON arsip(nomor_akta);
+CREATE INDEX IF NOT EXISTS idx_arsip_no_kk ON arsip(no_kk);
+CREATE INDEX IF NOT EXISTS idx_arsip_jenis_arsip ON arsip(jenis_arsip);
+CREATE INDEX IF NOT EXISTS idx_arsip_nik ON arsip(nik);
 CREATE INDEX IF NOT EXISTS idx_arsip_nama_lengkap ON arsip(nama_lengkap);
-CREATE INDEX IF NOT EXISTS idx_arsip_status ON arsip(status);
 
 -- Insert default admin user (password: admin123)
 -- bcrypt hash for 'admin123': $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi

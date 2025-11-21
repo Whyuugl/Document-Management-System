@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 const TestConnection = () => {
   const [backendStatus, setBackendStatus] = useState('checking');
-  const [ocrStatus, setOcrStatus] = useState('checking');
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
@@ -26,19 +25,6 @@ const TestConnection = () => {
       newErrors.push(`Backend connection failed: ${error.message}`);
     }
 
-    // Test OCR test endpoint
-    try {
-      const ocrResponse = await fetch('/api/test-ocr');
-      if (ocrResponse.ok) {
-        setOcrStatus('connected');
-      } else {
-        setOcrStatus('error');
-        newErrors.push('OCR test endpoint failed');
-      }
-    } catch (error) {
-      setOcrStatus('error');
-      newErrors.push(`OCR test failed: ${error.message}`);
-    }
 
     setErrors(newErrors);
   };
@@ -79,16 +65,6 @@ const TestConnection = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-semibold">OCR Test</h3>
-                <p className="text-sm text-gray-600">Tesseract.js OCR functionality</p>
-              </div>
-              <div className={`flex items-center ${getStatusColor(ocrStatus)}`}>
-                <span className="mr-2">{getStatusIcon(ocrStatus)}</span>
-                <span className="capitalize">{ocrStatus}</span>
-              </div>
-            </div>
           </div>
 
           {errors.length > 0 && (

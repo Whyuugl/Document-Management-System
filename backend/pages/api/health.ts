@@ -4,10 +4,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     res.status(200).json({
       status: 'OK',
-      message: 'Arsip Kependudukan API Server with OCR',
+      message: 'Arsip Kependudukan API Server',
       version: '1.0.0',
       timestamp: new Date().toISOString(),
-      features: ['OCR', 'File Upload', 'Text Extraction']
+      features: ['File Upload', 'Authentication', 'Archive Management']
     });
   } else {
     res.setHeader('Allow', ['GET']);
