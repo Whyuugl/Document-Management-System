@@ -1,119 +1,40 @@
 import React from 'react';
 
-const Chart = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
-  
-  // Sample data for the chart lines
-  const chartData = {
-    marriage: [1200, 1400, 1100, 1600, 1800, 2000, 2200, 2400, 2100, 1900, 1700, 1500],
-    divorce: [800, 900, 700, 1000, 1200, 1100, 1300, 1400, 1200, 1000, 900, 800],
-    death: [600, 700, 500, 800, 900, 1000, 1100, 1200, 1000, 900, 800, 700],
-    birth: [1500, 1700, 1400, 1900, 2100, 2300, 2500, 2700, 2400, 2200, 2000, 1800]
-  };
+const colors = ['bg-blue-500', 'bg-teal-500', 'bg-amber-500', 'bg-violet-500', 'bg-red-500', 'bg-emerald-500'];
 
-  const maxValue = Math.max(...chartData.marriage, ...chartData.divorce, ...chartData.death, ...chartData.birth);
-  const chartHeight = 200;
-
-  const getY = (value) => chartHeight - (value / maxValue) * chartHeight;
+const Chart = ({ categories = [] }) => {
+  const maxValue = Math.max(1, ...categories.map((item) => item.count || 0));
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-100 p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-6">Statistics: Rekap Kependudukan Tahun Ini</h3>
-      
-      <div className="relative">
-        {/* Y-axis labels */}
-        <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-gray-500">
-          <span>4k</span>
-          <span>3k</span>
-          <span>2k</span>
-          <span>1k</span>
-          <span>0</span>
+    <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase text-slate-500">Distribution</p>
+          <h3 className="mt-1 text-lg font-bold text-slate-900">Documents by Category</h3>
         </div>
+        <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">{categories.length} groups</span>
+      </div>
 
-        {/* Chart container */}
-        <div className="ml-8 relative" style={{ height: chartHeight }}>
-          <svg width="100%" height={chartHeight} className="w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Grid lines */}
-            {[0, 1, 2, 3, 4].map((i) => (
-              <line
-                key={i}
-                x1="0"
-                y1={i * 20}
-                x2="100"
-                y2={i * 20}
-                stroke="#e5e7eb"
-                strokeWidth="0.5"
+      <div className="space-y-4">
+        {categories.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">No category data yet</div>
+        ) : categories.map((item, index) => (
+          <div key={item.slug}>
+            <div className="mb-1 flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 font-semibold text-slate-700">
+                <span className={`h-2.5 w-2.5 rounded-full ${colors[index % colors.length]}`} />
+                {item.name}
+              </span>
+              <span className="text-slate-500">{item.count || 0}</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-100">
+              <div
+                className={`h-2 rounded-full ${colors[index % colors.length]}`}
+                style={{ width: `${((item.count || 0) / maxValue) * 100}%` }}
               />
-            ))}
-
-            {/* Marriage line (Yellow) */}
-            <polyline
-              points={chartData.marriage.map((value, index) => 
-                `${(index / (months.length - 1)) * 100},${100 - (value / maxValue) * 100}`
-              ).join(' ')}
-              fill="none"
-              stroke="#fbbf24"
-              strokeWidth="1"
-            />
-
-            {/* Divorce line (Red) */}
-            <polyline
-              points={chartData.divorce.map((value, index) => 
-                `${(index / (months.length - 1)) * 100},${100 - (value / maxValue) * 100}`
-              ).join(' ')}
-              fill="none"
-              stroke="#ef4444"
-              strokeWidth="1"
-            />
-
-            {/* Death line (Green) */}
-            <polyline
-              points={chartData.death.map((value, index) => 
-                `${(index / (months.length - 1)) * 100},${100 - (value / maxValue) * 100}`
-              ).join(' ')}
-              fill="none"
-              stroke="#10b981"
-              strokeWidth="1"
-            />
-
-            {/* Birth line (Blue) */}
-            <polyline
-              points={chartData.birth.map((value, index) => 
-                `${(index / (months.length - 1)) * 100},${100 - (value / maxValue) * 100}`
-              ).join(' ')}
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="1"
-            />
-          </svg>
-
-          {/* X-axis labels */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500">
-            {months.map((month) => (
-              <span key={month}>{month}</span>
-            ))}
+            </div>
           </div>
-        </div>
-
-        {/* Legend */}
-        <div className="flex flex-wrap justify-center gap-6 mt-6">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-            <span className="text-sm text-gray-600">Akte Pernikahan</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-sm text-gray-600">Akte Perceraian</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-600">Akte Kematian</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span className="text-sm text-gray-600">Akte Kelahiran</span>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

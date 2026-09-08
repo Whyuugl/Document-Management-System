@@ -17,45 +17,48 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse): Promise
       });
     }
 
-    // Get current date for month calculation
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const totalResult = await pool.query('SELECT COUNT(*) as count FROM documents');
+    const totalDocuments = parseInt(totalResult.rows[0].count);
 
-    // Total arsip kependudukan (hitung distinct nama, karena satu orang bisa punya beberapa akta)
-    const totalResult = await pool.query('SELECT COUNT(DISTINCT nama_lengkap) as count FROM arsip');
-    const totalArsip = parseInt(totalResult.rows[0].count);
-
-    // Total by jenis_arsip
-    const jenisArsipResult = await pool.query(`
-      SELECT jenis_arsip, COUNT(*) as count 
-      FROM arsip 
-      GROUP BY jenis_arsip
+    const categoryResult = await pool.query(`
+      SELECT c.slug, c.name, COUNT(d.id) as count
+      FROM document_categories c
+      LEFT JOIN documents d ON d.category_id = c.id
+      GROUP BY c.slug, c.name
+      ORDER BY c.name
     `);
 
-    // Convert to object for easy access
-    const jenisArsipCounts: { [key: string]: number } = {};
-    jenisArsipResult.rows.forEach(row => {
-      jenisArsipCounts[row.jenis_arsip] = parseInt(row.count);
-    });
+    const categories = categoryResult.rows.map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      count: parseInt(row.count)
+    }));
 
-    // Arsip bulan ini (using date_trunc for better PostgreSQL compatibility)
     const thisMonthResult = await pool.query(
       `SELECT COUNT(*) as count 
-       FROM arsip 
+       FROM documents
        WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_DATE)`
     );
-    const arsipBulanIni = parseInt(thisMonthResult.rows[0].count);
+    const documentsThisMonth = parseInt(thisMonthResult.rows[0].count);
+
+    const retensiResult = await pool.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE retention_due_at <= CURRENT_DATE) AS review,
+        COUNT(*) FILTER (WHERE retention_due_at > CURRENT_DATE AND retention_due_at <= CURRENT_DATE + INTERVAL '90 days') AS segera,
+        COUNT(*) FILTER (WHERE retention_due_at > CURRENT_DATE + INTERVAL '90 days') AS aktif
+      FROM documents
+    `);
+    const retensi = retensiResult.rows[0] || {};
 
     res.status(200).json({
       success: true,
       data: {
-        totalArsip,
-        kelahiran: jenisArsipCounts['kelahiran'] || 0,
-        pernikahan: jenisArsipCounts['pernikahan'] || 0,
-        perceraian: jenisArsipCounts['perceraian'] || 0,
-        kematian: jenisArsipCounts['kematian'] || 0,
-        arsipBulanIni
+        totalDocuments,
+        categories,
+        documentsThisMonth,
+        retensiReview: parseInt(retensi.review || 0),
+        retensiSegera: parseInt(retensi.segera || 0),
+        retensiAktif: parseInt(retensi.aktif || 0)
       }
     });
 

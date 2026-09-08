@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     res.status(200).json({
-      message: 'Arsip Kependudukan API Server',
+      message: 'Document Management API Server',
       version: '1.0.0',
       status: 'running',
       endpoints: {
@@ -13,12 +13,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
           logout: '/api/auth/logout',
           me: '/api/auth/me'
         },
-        arsip: '/api/arsip'
+        documents: '/api/documents',
+        categories: '/api/categories',
+        folders: '/api/folders',
+        activity: '/api/activity'
       },
       features: [
         'File Upload',
         'Authentication',
-        'Archive Management'
+        'Document Management',
+        'Document Versions',
+        'Document Preview'
       ]
     });
   } else {

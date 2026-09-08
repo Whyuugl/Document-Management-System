@@ -12,38 +12,32 @@ const pool = new Pool({
 
 async function createUser(username = 'admin', password = 'admin123') {
   const client = await pool.connect();
-  
+
   try {
-    // Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
-    // Insert user
+    const hashedPassword = await bcrypt.hash(password, 10);
     const result = await client.query(
-      'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, created_at',
+      `INSERT INTO users (username, password_hash)
+       VALUES ($1, $2)
+       ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash
+       RETURNING id, username, created_at`,
       [username, hashedPassword]
     );
-    
-    console.log('✅ User created successfully:');
+
+    console.log('User ready:');
     console.log('Username:', result.rows[0].username);
     console.log('Password:', password);
     console.log('ID:', result.rows[0].id);
     console.log('Created at:', result.rows[0].created_at);
-    console.log('\n⚠️  IMPORTANT: Change the default password after first login!');
-    
+    console.log('\nChange the default password after first login.');
   } catch (error) {
-    if (error.code === '23505') { // Unique violation
-      console.log(`❌ User already exists with username "${username}"`);
-    } else {
-      console.error('❌ Error creating user:', error.message);
-    }
+    console.error('Error creating user:', error.message);
+    process.exitCode = 1;
   } finally {
     client.release();
     await pool.end();
   }
 }
 
-// Get command line arguments
 const args = process.argv.slice(2);
 const username = args[0] || 'admin';
 const password = args[1] || 'admin123';

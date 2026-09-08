@@ -4,10 +4,13 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import ArsipKependudukan from './pages/ArsipKependudukan';
-import TambahArsip from './pages/TambahArsip';
-import Laporan from './pages/Laporan';
-import Pengaturan from './pages/Pengaturan';
+import Documents from './pages/Documents';
+import UploadDocument from './pages/UploadDocument';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
+import Categories from './pages/Categories';
+import Folders from './pages/Folders';
+import Activity from './pages/Activity';
 import './App.css';
 
 function App() {
@@ -15,11 +18,19 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
-  // Check authentication status on app load
   useEffect(() => {
     checkAuthStatus();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
+  };
 
   const checkAuthStatus = async () => {
     try {
@@ -34,12 +45,10 @@ function App() {
           setIsLoggedIn(true);
         }
       } else {
-        // If 401, user is not logged in, which is fine
         console.log('User not authenticated, showing login page');
       }
     } catch (error) {
       console.error('Auth check error:', error);
-      // Don't show error for auth check, just proceed to login
     } finally {
       setIsLoading(false);
     }
@@ -65,10 +74,9 @@ function App() {
     }
   };
 
-  // Show loading spinner while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className={`theme-${theme} app-shell flex min-h-screen items-center justify-center bg-gray-50`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -77,48 +85,43 @@ function App() {
     );
   }
 
-  // If not logged in, show login page
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} theme={theme} onThemeToggle={toggleTheme} />;
   }
 
-  // Function to render current page
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard />;
-      case 'arsip':
-        return <ArsipKependudukan />;
-      case 'tambah':
-        return <TambahArsip />;
-      case 'laporan':
-        return <Laporan />;
-      case 'pengaturan':
-        return <Pengaturan />;
+        return <Dashboard onNavigate={setCurrentPage} />;
+      case 'documents':
+        return <Documents onNavigate={setCurrentPage} />;
+      case 'upload':
+        return <UploadDocument onNavigate={setCurrentPage} />;
+      case 'reports':
+        return <Reports />;
+      case 'categories':
+        return <Categories />;
+      case 'folders':
+        return <Folders />;
+      case 'activity':
+        return <Activity />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard />;
     }
   };
-
-
-
-  // If logged in, show dashboard
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
+    <div className={`theme-${theme} app-shell flex h-screen overflow-hidden`}>
       <Sidebar onPageChange={setCurrentPage} currentPage={currentPage} />
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0" style={{ background: 'linear-gradient(180deg, #5D71E2 39.9%, #333E7C 100%)' }}>
-        {/* Header */}
-        <Header onLogout={handleLogout} user={user} />
-        
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
+
+      <div className="flex min-w-0 flex-1 flex-col bg-slate-50">
+        <Header onLogout={handleLogout} user={user} theme={theme} onThemeToggle={toggleTheme} onNavigate={setCurrentPage} />
+
+        <main className="flex-1 overflow-y-auto px-6 py-6">
           {renderCurrentPage()}
         </main>
-        
-        {/* Footer */}
+
         <Footer />
       </div>
     </div>
