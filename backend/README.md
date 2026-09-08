@@ -1,134 +1,183 @@
-# Backend API - Arsip Kependudukan
+# Backend API - DMS Office
 
-Backend API untuk aplikasi Arsip Kependudukan dengan sistem autentikasi.
+Backend ini adalah Next.js API server untuk DMS Office. Fungsinya menangani auth, upload file, metadata dokumen, folder, kategori, versioning, sharing, approval, notifications, retention, activity log, dan advanced search.
 
-## Setup Database
+## Setup
 
-1. Pastikan PostgreSQL sudah terinstall dan berjalan
-2. Buat database dengan nama `arsip_kependudukan`
-3. Jalankan script setup database:
-   ```bash
-   npm run setup-db
-   ```
+Jalankan dari root project:
 
-## Setup Environment Variables
+```bash
+npm install
+npm run migrate
+npm run create-admin
+```
 
-Buat file `.env` di root folder backend dengan konfigurasi berikut:
+Atau dari folder `backend`:
+
+```bash
+npm install
+npm run migrate
+npm run create-admin
+```
+
+Default login:
+
+```text
+admin / admin123
+```
+
+## Environment
+
+File `.env` backend mengikuti `env.example`.
 
 ```env
-# Server Configuration
 PORT=5000
-NODE_ENV=development
-
-# Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=arsip_kependudukan
 DB_USER=postgres
 DB_PASSWORD=admin
-
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_SECRET=change-this-secret
 JWT_EXPIRES_IN=7d
 ```
 
-## Install Dependencies
-
-```bash
-npm install
-```
-
-## Create Dummy Users
-
-Setelah database setup, buat 3 akun dummy untuk testing:
-
-```bash
-# Buat 3 akun dummy sekaligus (admin, user1, user2)
-npm run create-dummy-users
-
-# Atau buat user satu per satu:
-npm run create-admin          # admin/admin123
-npm run create-user-custom user1 user123
-npm run create-user-custom user2 user456
-```
-
-**📋 Akun dummy yang akan dibuat:**
-- **admin** / admin123 (untuk admin)
-- **user1** / user123 (untuk testing)
-- **user2** / user456 (untuk testing)
-
-**⚠️ PENTING: Ganti password default setelah login pertama!**
-
-## Run Development Server
+## Development
 
 ```bash
 npm run dev
 ```
 
-Server akan berjalan di `http://localhost:5000`
+Server default:
 
-## API Endpoints
-
-### Authentication
-
-#### POST `/api/auth/login`
-Login user
-```json
-{
-  "username": "username",
-  "password": "password"
-}
+```text
+http://localhost:5000
 ```
 
-#### POST `/api/auth/logout`
-Logout user
+## Scripts
 
-#### GET `/api/auth/me`
-Dapatkan informasi user yang sedang login (memerlukan autentikasi)
+- `npm run dev`: menjalankan Next.js API di port `5000`
+- `npm run build`: build backend Next.js
+- `npm run lint`: TypeScript check
+- `npm run migrate`: menjalankan `lib/migration.sql`
+- `npm run create-admin`: membuat user `admin`
+- `npm run seed-demo`: reset dan isi data demo kantor
+- `npm run test-db`: cek koneksi dan tabel dokumen
+- `npm run test-core`: cek tabel, constraint, relasi, dan index inti DMS
 
-### Response Format
+## Endpoint
 
-#### Success Response
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": {}
-}
+Auth:
+
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+
+Documents:
+
+- `GET /api/documents`
+- `POST /api/documents`
+- `PATCH /api/documents?id=:id&action=archive`
+- `PATCH /api/documents?id=:id&action=restore`
+- `PATCH /api/documents?id=:id&action=visibility&visibility=PRIVATE|INTERNAL|SHARED`
+- `DELETE /api/documents?document_number=:number`
+- `GET /api/documents/:id/preview`
+- `GET /api/documents/:id/download`
+- `GET /api/documents/:id/versions`
+- `POST /api/documents/:id/versions`
+- `PUT /api/documents/:id/metadata`
+
+Sharing:
+
+- `GET /api/documents/:id/shares`
+- `POST /api/documents/:id/shares`
+- `DELETE /api/documents/:id/shares?user_id=:id`
+
+Approval:
+
+- `POST /api/documents/:id/approval`
+- `PATCH /api/documents/:id/approval`
+
+Other:
+
+- `GET/POST/PUT/DELETE /api/categories`
+- `GET/POST/PUT/DELETE /api/folders`
+- `GET /api/users`
+- `GET /api/activity`
+- `GET /api/notifications`
+- `GET /api/dashboard/stats`
+- `GET /api/health`
+
+## Search Query
+
+`GET /api/documents` mendukung:
+
+- `search`
+- `category`
+- `folder`
+- `status`
+- `scope`
+- `approval`
+- `visibility`
+- `retention`
+- `owner`
+- `reference`
+- `file_type`
+- `date_from`
+- `date_to`
+- `page`
+- `limit`
+
+Search memakai PostgreSQL full-text search dengan index `idx_documents_search`, lalu fallback ke `ILIKE` untuk pola sederhana.
+
+## Database
+
+Core tables:
+
+- `users`
+- `document_categories`
+- `document_folders`
+- `documents`
+- `document_versions`
+- `document_shares`
+- `activity_logs`
+
+Important constraints:
+
+- `documents.status`: `DRAFT`, `ACTIVE`, `ARCHIVED`
+- `documents.visibility`: `PRIVATE`, `INTERNAL`, `SHARED`
+- `documents.approval_status`: `NOT_SUBMITTED`, `PENDING`, `APPROVED`, `REJECTED`
+- `retention_years > 0`
+- `document_versions` unique per `document_id` and `version_number`
+- `documents.current_version_id` must belong to the same document
+
+Important indexes:
+
+- `idx_documents_search`
+- `idx_documents_category_id`
+- `idx_documents_folder_id`
+- `idx_documents_status`
+- `idx_documents_visibility`
+- `idx_documents_approval_status`
+- `idx_documents_reviewer_id`
+- `idx_documents_retention_due_at`
+- `idx_documents_created_at`
+- `idx_document_shares_document_id`
+- `idx_document_shares_user_id`
+- `idx_document_versions_document_id`
+
+## Upload Storage
+
+Uploaded files disimpan lokal di:
+
+```text
+backend/uploads/documents
 ```
 
-#### Error Response
-```json
-{
-  "success": false,
-  "error": "Error message"
-}
-```
+Validasi upload dikelola di `lib/storage.ts`.
 
-## Database Schema
+## Notes
 
-### Users Table
-```sql
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## Security Features
-
-- Password di-hash menggunakan bcrypt dengan salt rounds 10
-- JWT token untuk autentikasi
-- HTTP-only cookies untuk menyimpan token
-- Middleware untuk proteksi route yang memerlukan autentikasi
-
-## Development Notes
-
-- Sistem login menggunakan username dan password
-- **Tidak ada fitur register untuk user biasa** - hanya admin yang bisa membuat user baru
-- Token JWT disimpan dalam HTTP-only cookie
-- Middleware `requireAuth` tersedia untuk proteksi route
-- Semua password di-hash sebelum disimpan ke database
-- Untuk menambah user baru, gunakan script `npm run create-admin` atau `npm run create-user-custom username password`
+- Semua endpoint utama dilindungi auth cookie.
+- Akses dokumen dicek lewat `lib/access.ts`.
+- Retention dihitung lewat `lib/retention.ts`.
+- Migration dibuat idempotent, jadi aman dijalankan ulang.
