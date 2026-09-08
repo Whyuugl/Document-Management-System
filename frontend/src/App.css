@@ -1,1 +1,300 @@
 @import "tailwindcss";
+
+.theme-light {
+  color-scheme: light;
+  --app-bg: #eef3f7;
+  --panel: #fbfcfd;
+  --panel-soft: #eef5f4;
+  --panel-strong: #dce8ed;
+  --border: #d8e2e7;
+  --text: #172026;
+  --muted: #65727d;
+  --accent: #0f766e;
+  --accent-strong: #2563eb;
+  --accent-warm: #f97316;
+  --accent-soft: #d9f2ef;
+  --ring: rgba(15, 118, 110, 0.2);
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --app-bg: #111827;
+  --panel: #182333;
+  --panel-soft: #202d3f;
+  --panel-strong: #2a3a4f;
+  --border: #344456;
+  --text: #edf5f7;
+  --muted: #9fb0bd;
+  --accent: #5eead4;
+  --accent-strong: #93c5fd;
+  --accent-warm: #fb923c;
+  --accent-soft: rgba(94, 234, 212, 0.13);
+  --ring: rgba(94, 234, 212, 0.18);
+}
+
+* {
+  letter-spacing: 0 !important;
+}
+
+.app-shell {
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.12), transparent 28%),
+    linear-gradient(220deg, rgba(249, 115, 22, 0.09), transparent 34%),
+    var(--app-bg);
+  color: var(--text);
+}
+
+.app-shell .bg-white,
+.app-shell .bg-slate-50,
+.app-shell .bg-gray-50 {
+  background-color: var(--panel);
+}
+
+.app-shell .shadow-sm,
+.app-shell .shadow-lg {
+  box-shadow: 0 14px 38px rgba(23, 32, 38, 0.08);
+}
+
+.app-sidebar {
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.1), transparent 32%),
+    var(--panel);
+  border-color: var(--border);
+}
+
+.app-sidebar h1,
+.app-sidebar p,
+.app-sidebar nav button {
+  color: var(--text);
+}
+
+.app-sidebar > div:first-child {
+  border-color: var(--border);
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+}
+
+.app-sidebar nav button:not(.bg-blue-50):hover {
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
+.app-sidebar nav button {
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.app-sidebar nav button.bg-blue-50 {
+  background: linear-gradient(135deg, var(--accent-soft), rgba(37, 99, 235, 0.1));
+  border-color: var(--ring);
+  box-shadow: inset 3px 0 0 var(--accent);
+  color: var(--accent);
+}
+
+.app-sidebar nav button.bg-blue-50 svg {
+  color: var(--accent);
+}
+
+.app-header {
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-color: var(--border);
+}
+
+.app-login-card {
+  background: var(--panel);
+}
+
+.app-shell main.bg-slate-50,
+.app-shell .flex-1.bg-slate-50 {
+  background: transparent;
+}
+
+.app-shell table thead,
+.app-shell .bg-gray-50 {
+  background-color: var(--panel-soft);
+}
+
+.app-shell .rounded-lg.bg-white,
+.app-shell .overflow-hidden.rounded-lg.bg-white {
+  border-color: var(--border);
+  background: var(--panel);
+}
+
+.dashboard-intro {
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.14), transparent 42%),
+    linear-gradient(225deg, rgba(249, 115, 22, 0.12), transparent 38%),
+    var(--panel);
+}
+
+.metric-card {
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.metric-card:hover {
+  border-color: var(--ring);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(23, 32, 38, 0.12);
+}
+
+.metric-card-line {
+  height: 3px;
+  width: 52px;
+  margin: -20px 0 17px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+}
+
+.metric-icon {
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(37, 99, 235, 0.12)),
+    var(--panel-soft);
+  border: 1px solid var(--ring);
+}
+
+.app-shell tbody tr:hover {
+  background-color: var(--accent-soft);
+}
+
+.app-shell input,
+.app-shell select,
+.app-shell textarea {
+  background-color: color-mix(in srgb, var(--panel) 72%, var(--panel-soft));
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.app-shell input:focus,
+.app-shell select:focus,
+.app-shell textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.app-shell .bg-blue-600,
+.app-shell .hover\:bg-blue-700:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+}
+
+.app-shell .bg-green-600,
+.app-shell .hover\:bg-green-700:hover {
+  background: linear-gradient(135deg, #059669, var(--accent));
+  color: white;
+}
+
+.app-shell .text-blue-600,
+.app-shell .text-blue-700 {
+  color: var(--accent);
+}
+
+.app-shell .bg-blue-50 {
+  background-color: var(--accent-soft);
+}
+
+.app-shell .border-blue-100,
+.app-shell .border-blue-200 {
+  border-color: var(--ring);
+}
+
+.app-shell .text-amber-600,
+.app-shell .text-amber-700 {
+  color: var(--accent-warm);
+}
+
+.app-shell .bg-amber-50 {
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+.app-shell table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app-shell th {
+  color: var(--muted);
+}
+
+.app-shell td,
+.app-shell th {
+  border-color: var(--border);
+}
+
+.theme-dark .app-sidebar {
+  background: var(--panel);
+}
+
+.theme-dark .app-header {
+  background: rgba(23, 32, 51, 0.92);
+}
+
+.theme-dark .border-slate-200,
+.theme-dark .border-gray-200,
+.theme-dark .border-gray-100,
+.theme-dark .border-gray-300,
+.theme-dark .border-slate-300 {
+  border-color: var(--border);
+}
+
+.theme-dark .text-slate-950,
+.theme-dark .text-slate-900,
+.theme-dark .text-gray-950,
+.theme-dark .text-gray-900,
+.theme-dark .text-gray-800,
+.theme-dark .text-gray-700 {
+  color: var(--text);
+}
+
+.theme-dark .text-slate-700,
+.theme-dark .text-slate-600,
+.theme-dark .text-slate-500,
+.theme-dark .text-gray-600,
+.theme-dark .text-gray-500 {
+  color: var(--muted);
+}
+
+.theme-dark input,
+.theme-dark select,
+.theme-dark textarea {
+  background-color: var(--panel-soft);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.theme-dark .bg-slate-100,
+.theme-dark .bg-gray-100,
+.theme-dark .bg-gray-50 {
+  background-color: var(--panel-soft);
+}
+
+.theme-dark .hover\:bg-slate-100:hover,
+.theme-dark .hover\:bg-gray-100:hover,
+.theme-dark .hover\:bg-gray-50:hover {
+  background-color: #26344d;
+}
+
+.theme-dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border);
+}
+
+.theme-dark .app-shell {
+  background:
+    linear-gradient(135deg, rgba(94, 234, 212, 0.08), transparent 30%),
+    linear-gradient(220deg, rgba(251, 146, 60, 0.07), transparent 34%),
+    var(--app-bg);
+}
+
+.theme-dark .app-shell .bg-red-50 {
+  background-color: rgba(248, 113, 113, 0.12);
+}
+
+.theme-dark .app-shell .bg-emerald-50,
+.theme-dark .app-shell .bg-green-100 {
+  background-color: rgba(52, 211, 153, 0.12);
+}
